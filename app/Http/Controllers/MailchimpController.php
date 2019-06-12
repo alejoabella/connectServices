@@ -4,60 +4,37 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use GuzzleHttp\Client;
+use App\Repositories\Mailchimp;
 
 class MailchimpController extends Controller
 {
     
-    public function __construct()
+    protected $mailchimp;
+
+    public function __construct(Mailchimp $mailchimp)
     {
         $this->middleware('auth');
+        $this->mailchimp = $mailchimp;
     }
 
-    public function index()
+    public function login()
+    {   
+        $baseUri = "https://login.mailchimp.com/oauth2/";
+        return redirect($baseUri . 'authorize?response_type=code&client_id=' . env('MAILCHIMP_API_CLIENT_ID') . '&redirect_uri=' . env('MAILCHIMP_API_REDIRECT_URI'));
+    }
+
+    public function response(Request $request)
     {
         
-        return redirect('https://login.mailchimp.com/oauth2/authorize?response_type=code&client_id=' . 
-        env('MAILCHIMP_API_CLIENT_ID') . '&redirect_uri=' . env('MAILCHIMP_API_REDIRECT_URI'));
+        $this->mailchimp->getToken($request->input('code'));
+        $this->mailchimp->getMetadata($apiKey);
     }
 
-    public function getToken(Request $request)
+    public function metadata()
     {
-        $code = $request->input('code');
 
-        $client = new Client([
-            'base_uri' => 'https://login.mailchimp.com/oauth2/token',
-            'timeout'  => 2.0,
-        ]);
-
-        $response = $client->request('POST', 'token',         [
-            'form_params' => [
-                'grant_type' => 'authorization_code',
-                'client_id' => env('MAILCHIMP_API_CLIENT_ID'),
-                'client_secret' => env('MAILCHIMP_API_CLIENT_SECRET'),
-                'redirect_uri' => env('MAILCHIMP_API_REDIRECT_URI'),
-                'code' => $request->input('code')
-            ]
-        ]);
-
-        dd($response->getBody()->getContents());
         
-    }
-
-    public function getMetadata()
-    {
-        $client = new Client([
-            'base_uri' => 'https://login.mailchimp.com/oauth2/metadata',
-            'timeout'  => 2.0,
-        ]);
-
-        $response = $client->request('GET', 'metadata', [
-            'headers' => [
-                'User-Agent' => 'oauth2-draft-v10',
-                'Accept'     => 'application/json',
-                'Authorization'      => 'OAuth ' . env('MAILCHIMP_API_KEY')
-            ]
-        ]);
-
+        // Store metadata in DB
         dd($response->getBody()->getContents());
 
     }
@@ -76,6 +53,7 @@ class MailchimpController extends Controller
             ]
         ]);
 
+        // Store List in DB
         dd($response->getBody()->getContents());
     }
 

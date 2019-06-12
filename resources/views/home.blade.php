@@ -14,7 +14,8 @@
                         </div>
                     @endif
 
-                    You are logged in!
+                    <a href="{{ url('/mailchimp-login') }}" class="btn btn-primary">Mailchimp</a>
+                    <a href="{{ url('/google-login') }}" class="btn btn-primary">Google</a>
                 </div>
             </div>
         </div>
