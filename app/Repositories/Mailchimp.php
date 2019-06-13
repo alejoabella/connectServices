@@ -50,7 +50,9 @@ class Mailchimp {
             ]
         ]);
 
-        return json_decode($response->getBody()->getContents())->get;
+        dd(json_decode($response->getBody()->getContents()));
+        $dc = json_decode($response->getBody()->getContents())->dc;
+        return json_decode($response->getBody()->getContents())->dc;
     }
 
     public function getLists($accessToken)

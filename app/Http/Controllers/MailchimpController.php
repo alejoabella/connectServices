@@ -26,7 +26,12 @@ class MailchimpController extends Controller
     {
         
         $accessToken = $this->mailchimp->getToken($request->input('code'));
-        $this->mailchimp->getMetadata($accessToken);
+        $dc = $this->mailchimp->getMetadata($accessToken);
+        // Save token to DB
+        /*         DB::table('users')->insert([
+            ['email' => 'taylor@example.com'],
+            ['email' => 'dayle@example.com']
+        ]); */
     }
 
     public function showLists()
