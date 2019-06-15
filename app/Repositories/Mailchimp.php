@@ -4,6 +4,7 @@ namespace App\Repositories;
 
 use GuzzleHttp\Client;
 use function GuzzleHttp\json_decode;
+use App\Member;
 
 class Mailchimp {
 
@@ -69,7 +70,7 @@ class Mailchimp {
         return json_decode( $response->getBody()->getContents())->lists;
     }
 
-    public function getMembers()
+    public function getMembers($accessToken, $listId)
     {
         $client = new Client([
             'base_uri' => 'https://us20.api.mailchimp.com/3.0/',
@@ -82,9 +83,9 @@ class Mailchimp {
 
         do {
 
-            $response = $client->request('GET', 'lists/828d1335f5/members?offset=' . $offset . '&count=' . $count, [
+            $response = $client->request('GET', 'lists/' . $listId . '/members?offset=' . $offset . '&count=' . $count, [
                 'headers' => [
-                    'Authorization' => 'apikey ' . env('MAILCHIMP_API_KEY')
+                    'Authorization' => 'apikey ' . $accessToken
                 ]
             ]);
 
@@ -94,20 +95,14 @@ class Mailchimp {
 
             foreach ($r as $key) {
                 echo $key->email_address . "<br>";
+                Member::firstOrCreate(
+                    ['email' => $key->email_address]
+                );
             }
 
             $offset += 1000;
             
         } while ($total >= 1000);
-    }
-
-    protected function storeMembers()
-    {
-/*         DB::table('users')->insert([
-            ['email' => 'taylor@example.com'],
-            ['email' => 'dayle@example.com']
-        ]); */
-        // Store all members in DB
     }
 
 }

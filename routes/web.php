@@ -20,8 +20,8 @@ Auth::routes();
 Route::get('home', 'HomeController@index')->name('home');
 
 Route::get('mailchimp-login', 'MailchimpController@login');
-Route::get('malchimp-response', 'MailchimpController@response');
+Route::get('mailchimp-response', 'MailchimpController@response');
 
-Route::get('mailchimp-metadata', 'MailchimpController@metadata');
-Route::get('getlists', 'MailchimpController@getLists');
-Route::get('getmembersbylistid', 'MailchimpController@getMembersByListId');
+
+
+Route::post('mailchim-process-list', 'MailchimpController@getMembersByListId');

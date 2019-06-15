@@ -8,17 +8,26 @@
                 <div class="card-header">Dashboard</div>
 
                 <div class="card-body">
+
                     @if (session('status'))
                         <div class="alert alert-success" role="alert">
                             {{ session('status') }}
                         </div>
                     @endif
 
-                    @foreach ($lists as $list)
-                        
-                        {{ $list->id }}
-                    
-                    @endforeach
+                    <form method="POST" action="/mailchim-process-list">
+
+                        @csrf
+
+                        @foreach ($lists as $list)
+                            
+                            <input type="checkbox" name="list-id" id="list-id" value="{{ $list->id }}" />
+                         
+                        @endforeach
+
+                        <input id="submit" type="submit" value="Synchronize Now" />
+
+                    </form>
 
                 </div>
             </div>

@@ -37,17 +37,18 @@ class MailchimpController extends Controller
         );
 
         $lists = $this->mailchimp->getLists($accessToken);
-/*         foreach ($lists as $key) {
-            echo "<pre>";
-            print_r($key);
-        }  */
        
         return view('mailchimp-lists', ['lists' => $lists]);
     }
 
-    public function getSelectedLists()
+    public function getMembersByListId(Request $request)
     {
-        $members = $this->mailchimp->getMembers($accessToken);
+
+        $listId = $request->input('list-id');
+        $accessToken = DataUser::where('user_id', Auth::id())->first();
+        $this->mailchimp->getMembers($accessToken->mailchimp_token, $listId);
+
+        return "Members imported.";
     }
 
 }
