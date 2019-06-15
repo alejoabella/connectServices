@@ -2,9 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use GuzzleHttp\Client;
+use Illuminate\Support\Facades\Log;
 use App\Repositories\Mailchimp;
+use App\DataUser;
 
 class MailchimpController extends Controller
 {
@@ -27,16 +30,19 @@ class MailchimpController extends Controller
         
         $accessToken = $this->mailchimp->getToken($request->input('code'));
         $dc = $this->mailchimp->getMetadata($accessToken);
-        // Save token to DB
-        /*         DB::table('users')->insert([
-            ['email' => 'taylor@example.com'],
-            ['email' => 'dayle@example.com']
-        ]); */
-    }
 
-    public function showLists()
-    {
+        DataUser::firstOrCreate(
+            ['user_id' => Auth::id(), 'mailchimp_token' => $accessToken],
+            ['mailchimp_dc' => $dc]
+        );
+
         $lists = $this->mailchimp->getLists($accessToken);
+/*         foreach ($lists as $key) {
+            echo "<pre>";
+            print_r($key);
+        }  */
+       
+        return view('mailchimp-lists', ['lists' => $lists]);
     }
 
     public function getSelectedLists()

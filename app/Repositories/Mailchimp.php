@@ -50,8 +50,6 @@ class Mailchimp {
             ]
         ]);
 
-        dd(json_decode($response->getBody()->getContents()));
-        $dc = json_decode($response->getBody()->getContents())->dc;
         return json_decode($response->getBody()->getContents())->dc;
     }
 
@@ -68,7 +66,7 @@ class Mailchimp {
             ]
         ]);
 
-        return json_decode( $response->getBody()->getContents())->get;
+        return json_decode( $response->getBody()->getContents())->lists;
     }
 
     public function getMembers()
