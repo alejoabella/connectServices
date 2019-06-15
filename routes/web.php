@@ -21,7 +21,4 @@ Route::get('home', 'HomeController@index')->name('home');
 
 Route::get('mailchimp-login', 'MailchimpController@login');
 Route::get('mailchimp-response', 'MailchimpController@response');
-
-
-
 Route::post('mailchim-process-list', 'MailchimpController@getMembersByListId');
