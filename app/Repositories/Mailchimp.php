@@ -8,6 +8,22 @@ use App\Member;
 
 class Mailchimp {
 
+    protected $oauth2;
+    protected $client;
+
+    public function __construct()
+    {
+        $this->oauth2 = new Client([
+            'base_uri' => 'https://login.mailchimp.com/oauth2/',
+            'timeout'  => 2.0,
+        ]);
+
+        $this->client = new Client([
+            'base_uri' => 'https://us20.api.mailchimp.com/3.0/',
+            'timeout'  => 0,
+        ]);
+    }
+
     public function prepareUrl()
     {
         $baseUri = 'https://login.mailchimp.com/oauth2/authorize';
@@ -18,12 +34,7 @@ class Mailchimp {
 
     public function getToken($code)
     {
-        $client = new Client([
-            'base_uri' => 'https://login.mailchimp.com/oauth2/token',
-            'timeout'  => 2.0,
-        ]);
-
-        $response = $client->request('POST', 'token',         [
+        $response = $this->oauth2->request('POST', 'token',         [
             'form_params' => [
                 'grant_type' => 'authorization_code',
                 'client_id' => env('MAILCHIMP_API_CLIENT_ID'),
@@ -38,12 +49,7 @@ class Mailchimp {
 
     public function getMetadata($accessToken)
     {
-        $client = new Client([
-            'base_uri' => 'https://login.mailchimp.com/oauth2/metadata',
-            'timeout'  => 2.0,
-        ]);
-
-        $response = $client->request('GET', 'metadata', [
+        $response = $this->oauth2->request('GET', 'metadata', [
             'headers' => [
                 'User-Agent' => 'oauth2-draft-v10',
                 'Accept'     => 'application/json',
@@ -56,53 +62,38 @@ class Mailchimp {
 
     public function getLists($accessToken)
     {
-        $client = new Client([
-            'base_uri' => 'https://us20.api.mailchimp.com/3.0/',
-            'timeout'  => 2.0,
-        ]);
-
-        $response = $client->request('GET', 'lists', [
-            'headers' => [
-                'Authorization' => 'apikey ' . $accessToken
-            ]
-        ]);
-
+        $response = $this->requestData($accessToken);
         return json_decode( $response->getBody()->getContents())->lists;
     }
 
     public function getMembers($accessToken, $listId)
     {
-        $client = new Client([
-            'base_uri' => 'https://us20.api.mailchimp.com/3.0/',
-            'timeout'  => 0,
-        ]);
-        
         // Get all members
         $offset = 0;
         $count = 1000;
 
         do {
 
-            $response = $client->request('GET', 'lists/' . $listId . '/members?offset=' . $offset . '&count=' . $count, [
-                'headers' => [
-                    'Authorization' => 'apikey ' . $accessToken
-                ]
-            ]);
-
+            $response = $this->requestData($accessToken, $listId . '/members?offset=' . $offset . '&count=' . $count);
             $r = json_decode($response->getBody()->getContents())->members;
-
             $total = count($r);
 
             foreach ($r as $key) {
-                echo $key->email_address . "<br>";
-                Member::firstOrCreate(
-                    ['email' => $key->email_address]
-                );
+                Member::firstOrCreate(['email' => $key->email_address]);
             }
 
             $offset += 1000;
             
         } while ($total >= 1000);
+    }
+
+    private function requestData($accessToken, $url = '')
+    {
+        return $this->client->request('GET', 'lists/' . $url, [
+            'headers' => [
+                'Authorization' => 'apikey ' . $accessToken
+            ]
+        ]);
     }
 
 }
